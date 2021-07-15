@@ -155,6 +155,12 @@ init_proc_sysfs()
 }
 
 
+modprobe_log()
+{
+   debug_log "modprobe" "$*" 
+   modprobe $1 2>/dev/null
+}
+
 # modprobe all modules found in initial ramdisk
 # $1 = -e for match, -v for negative match
 # $2 = regex pattern
@@ -164,16 +170,10 @@ modprobe_everything()
    debug_log "modprobe_everything" "$*"
 
    echo_green_star >&2
-   echo "Probing for hardware" >&2
+   echo "Probing for hardware (legacy)" >&2
 
-   find /lib/modules/ | fgrep .ko | egrep $1 $2 | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe 2>/dev/null
+   find /lib/modules/ -name '*.ko' | egrep $1 $2 | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe_log
    refresh_devs
-}
-
-modprobe_log()
-{
-   debug_log "modprobe" "$*" 
-   modprobe $1 2>/dev/null
 }
 
 # modprobe all modules found in initial ramdisk

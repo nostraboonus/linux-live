@@ -170,6 +170,12 @@ modprobe_everything()
    refresh_devs
 }
 
+modprobe_log()
+{
+   debug_log "modprobe" "$*" 
+   modprobe $1 2>/dev/null
+}
+
 # modprobe all modules found in initial ramdisk
 # $1 = -e for match, -v for negative match
 # $2 = regex pattern
@@ -179,10 +185,10 @@ modprobe_every_net()
    debug_log "modprobe_every_net" "$*"
 
    echo_green_star >&2
-   echo "Probing for hardware" >&2
+   echo "Probing for network hardware" >&2
 
-   find /lib/modules/net/ | fgrep .ko | egrep $1 $2 | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe 2>/dev/null
-   find /lib/modules/drivers/net/ | fgrep .ko | egrep $1 $2 | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe 2>/dev/null
+   find /lib/modules/*/kernel/net/ | fgrep .ko | egrep $1 $2 | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe_log
+   find /lib/modules/*/kernel/drivers/net/ | fgrep .ko | egrep $1 $2 | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe_log
    refresh_devs
 }
 

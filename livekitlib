@@ -187,8 +187,8 @@ modprobe_every_net()
    echo_green_star >&2
    echo "Probing for network hardware" >&2
 
-   find /lib/modules/*/kernel/net/ | fgrep .ko | egrep $1 $2 | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe_log
-   find /lib/modules/*/kernel/drivers/net/ | fgrep .ko | egrep $1 $2 | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe_log
+   find /lib/modules/*/kernel/net/ -name '*.ko' | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe_log
+   find /lib/modules/*/kernel/drivers/net/ -name '*.ko' | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe_log
    refresh_devs
 }
 
@@ -414,7 +414,7 @@ init_network_dev()
    local MODULE ETH
 
    # first modprobe everything   
-   modprobe_every_net -e /drivers/net/
+   modprobe_every_net
    ETH="$(network_connected_devices)"
    if [ "$ETH" != "" ]; then
       echo $ETH

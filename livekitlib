@@ -73,7 +73,7 @@ debug_shell()
 {
    if [ "$DEBUG_IS_ENABLED" ]; then
       show_debug_banner
-      setsid sh -c 'exec sh < /dev/tty1 >/dev/tty1 2>&1'
+#      setsid sh -c 'exec sh < /dev/tty1 >/dev/tty1 2>&1'
       echo
    fi
 }
@@ -366,10 +366,18 @@ mount_command()
 
 # echo first network device known at the moment of calling, eg. eth0
 #
-network_device()
+network_connected_devices()
 {
-   debug_log "network_device" "$*"
-   cat /proc/net/dev | grep : | grep -v lo: | cut -d : -f 1 | tr -d " " | head -n 1
+   local device
+
+   debug_log "network_connected_devices" "$*"
+   for device in `cat /proc/net/dev | grep : | grep -v lo: | cut -d : -f 1 | tr -d " "`; do
+      ip l set dev $device up
+      if [ "$(cat /sys/class/net/$device/carrier)" -eq 1 ]; then
+          echo $device
+      fi
+   done
+   sleep 2
 }
 
 
@@ -384,22 +392,14 @@ init_network_dev()
    debug_log "init_network_dev" "$*"
    local MODULE ETH
 
-   for MODULE in 3c59x acenic e1000 e1000e e100 epic100 hp100 ne2k-pci \
-   pcnet32 8139too 8139cp tulip via-rhine r8169 atl1e yellowfin tg3 \
-   dl2k ns83820 atl1 b44 bnx2 skge sky2 tulip forcedeth sb1000 sis900; do
-      modprobe $MODULE 2>/dev/null
-      ETH="$(network_device)"
-      if [ "$ETH" != "" ]; then
-         echo $ETH
-         return 0
-      fi
-      rmmod $MODULE 2>/dev/null
-   done
-
-   # If we are here, none of the above specified modules worked.
-   # As a last chance, try to modprobe everything else
+   # first modprobe everything   
    modprobe_everything -e /drivers/net/
-   echo $(network_device)
+   ETH="$(network_connected_devices)"
+   if [ "$ETH" != "" ]; then
+      echo $ETH
+      return 0
+   fi
+   sleep 5
 }
 
 
@@ -412,7 +412,7 @@ init_network_ip()
    local IP ETH SCRIPT CLIENT SERVER GW MASK
 
    SCRIPT=/tmp/dhcpscript
-   ETH=$(init_network_dev)
+   ETH=$1
    IP=$(cmdline_value ip)
 
    echo "* Setting up network" >&2
@@ -425,6 +425,7 @@ init_network_ip()
          echo nameserver "$GW" >> /etc/resolv.conf
          echo nameserver "$SERVER" >> /etc/resolv.conf
       done
+      ping -c 4 $GW
    else
       # if client ip is unknown, try to get a DHCP lease
       ifconfig $ETH up
@@ -432,8 +433,30 @@ init_network_ip()
       chmod a+x $SCRIPT
       udhcpc -i $ETH -n -s $SCRIPT -q >/dev/null
    fi
+   if [ $? -ne 0 ]; then
+     debug_log "Can't receive or set an ip"
+     return 1
+   fi
+   echo $ETH
+   return 0
 }
 
+probe_network()
+{
+   debug_log "discover_network" "$*"
+   local device
+
+   echo "* probing network interfaces..." >&2
+   for device in $(init_network_dev); do
+      init_network_ip $device
+      if [ $? -eq 0 ]; then
+        echo "* choose network device $device" >&2
+        echo $device
+        return 0
+      fi
+   done
+   return 1 
+}
 
 # Mount data from http using httpfs
 # $1 = from URL
@@ -451,9 +474,7 @@ mount_data_http()
       CACHE="-C /tmp/httpfs.cache -S "$(($CACHE*1024*1024))
    fi
 
-   init_network_ip
-
-   if [ "$(network_device)" != "" ]; then
+   if [ "$(probe_network)" != "" ]; then
       echo "* Mounting remote file..." >&2
       mkdir -p "$2"
       @mount.httpfs2 -r 9999 -t 5 $CACHE -c /dev/null "$1" "$2" -o ro >/dev/null 2>/dev/null
@@ -849,7 +870,7 @@ change_root()
 
    # if we are booting over httpfs, we need to copyup some files so they are
    # accessible on union without any further lookup down, else httpfs locks
-   if [ "$(network_device)" != "" ]; then
+   if [ "$(probe_network)" != "" ]; then
       touch "/net.up.flag"
       touch "$1/etc/resolv.conf"
       touch "$1/etc/hosts"

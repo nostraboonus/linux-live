@@ -172,7 +172,7 @@ modprobe_everything()
    echo_green_star >&2
    echo "Probing for hardware (legacy)" >&2
 
-   find /lib/modules/ -name '*.ko' | egrep $1 $2 | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe_log
+   find /lib/modules/ -name '*.ko' | egrep $1 $2 | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe
    refresh_devs
 }
 
@@ -187,8 +187,8 @@ modprobe_every_net()
    echo_green_star >&2
    echo "Probing for network hardware" >&2
 
-   find /lib/modules/*/kernel/net/ -name '*.ko' | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe_log
-   find /lib/modules/*/kernel/drivers/net/ -name '*.ko' | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe_log
+   find /lib/modules/*/kernel/net/ -name '*.ko' | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe
+   find /lib/modules/*/kernel/drivers/net/ -name '*.ko' | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe
    refresh_devs
 }
 

@@ -170,6 +170,21 @@ modprobe_everything()
    refresh_devs
 }
 
+# modprobe all modules found in initial ramdisk
+# $1 = -e for match, -v for negative match
+# $2 = regex pattern
+#
+modprobe_every_net()
+{
+   debug_log "modprobe_every_net" "$*"
+
+   echo_green_star >&2
+   echo "Probing for hardware" >&2
+
+   find /lib/modules/net/ | fgrep .ko | egrep $1 $2 | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe 2>/dev/null
+   find /lib/modules/drivers/net/ | fgrep .ko | egrep $1 $2 | sed -r "s:^.*/|[.]ko\$::g" | xargs -n 1 modprobe 2>/dev/null
+   refresh_devs
+}
 
 refresh_devs()
 {
@@ -393,7 +408,7 @@ init_network_dev()
    local MODULE ETH
 
    # first modprobe everything   
-   modprobe_everything -e /drivers/net/
+   modprobe_every_net -e /drivers/net/
    ETH="$(network_connected_devices)"
    if [ "$ETH" != "" ]; then
       echo $ETH

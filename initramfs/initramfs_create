@@ -73,47 +73,48 @@ mknod $INITRAMFS/dev/tty4 c 4 4
 #copy_including_deps /usr/bin/strace
 #copy_including_deps /usr/bin/lsof
 
-copy_including_deps /$LMK/kernel/fs/aufs
-copy_including_deps /$LMK/kernel/fs/overlayfs
-copy_including_deps /$LMK/kernel/fs/ext2
-copy_including_deps /$LMK/kernel/fs/ext3
-copy_including_deps /$LMK/kernel/fs/ext4
-copy_including_deps /$LMK/kernel/fs/fat
-copy_including_deps /$LMK/kernel/fs/nls
-copy_including_deps /$LMK/kernel/fs/fuse
-copy_including_deps /$LMK/kernel/fs/isofs
-copy_including_deps /$LMK/kernel/fs/ntfs
-copy_including_deps /$LMK/kernel/fs/reiserfs
-copy_including_deps /$LMK/kernel/fs/squashfs
+copy_including_deps /$LMK
+#copy_including_deps /$LMK/kernel/fs/aufs
+#copy_including_deps /$LMK/kernel/fs/overlayfs
+#copy_including_deps /$LMK/kernel/fs/ext2
+#copy_including_deps /$LMK/kernel/fs/ext3
+#copy_including_deps /$LMK/kernel/fs/ext4
+#copy_including_deps /$LMK/kernel/fs/fat
+#copy_including_deps /$LMK/kernel/fs/nls
+#copy_including_deps /$LMK/kernel/fs/fuse
+#copy_including_deps /$LMK/kernel/fs/isofs
+#copy_including_deps /$LMK/kernel/fs/ntfs
+#copy_including_deps /$LMK/kernel/fs/reiserfs
+#copy_including_deps /$LMK/kernel/fs/squashfs
 
 # crc32c is needed for ext4, but I don't know which one, add them all, they are small
 find /$LMK/kernel/ | grep crc32c | while read LINE; do
    copy_including_deps $LINE
 done
 
-copy_including_deps /$LMK/kernel/drivers/staging/zsmalloc # needed by zram
-copy_including_deps /$LMK/kernel/drivers/block/zram
-copy_including_deps /$LMK/kernel/drivers/block/loop.*
+#copy_including_deps /$LMK/kernel/drivers/staging/zsmalloc # needed by zram
+#copy_including_deps /$LMK/kernel/drivers/block/zram
+#copy_including_deps /$LMK/kernel/drivers/block/loop.*
 
 # usb drivers
-copy_including_deps /$LMK/kernel/drivers/usb/storage/usb-storage.*
-copy_including_deps /$LMK/kernel/drivers/usb/host
-copy_including_deps /$LMK/kernel/drivers/usb/common
-copy_including_deps /$LMK/kernel/drivers/usb/core
-copy_including_deps /$LMK/kernel/drivers/hid/usbhid
-copy_including_deps /$LMK/kernel/drivers/hid/hid.*
-copy_including_deps /$LMK/kernel/drivers/hid/uhid.*
-copy_including_deps /$LMK/kernel/drivers/hid/hid-generic.*
+#copy_including_deps /$LMK/kernel/drivers/usb/storage/usb-storage.*
+#copy_including_deps /$LMK/kernel/drivers/usb/host
+#copy_including_deps /$LMK/kernel/drivers/usb/common
+#copy_including_deps /$LMK/kernel/drivers/usb/core
+#copy_including_deps /$LMK/kernel/drivers/hid/usbhid
+#copy_including_deps /$LMK/kernel/drivers/hid/hid.*
+#copy_including_deps /$LMK/kernel/drivers/hid/uhid.*
+#copy_including_deps /$LMK/kernel/drivers/hid/hid-generic.*
 
 # disk and cdrom drivers
-copy_including_deps /$LMK/kernel/drivers/cdrom
-copy_including_deps /$LMK/kernel/drivers/scsi/sr_mod.*
-copy_including_deps /$LMK/kernel/drivers/scsi/sd_mod.*
-copy_including_deps /$LMK/kernel/drivers/scsi/scsi_mod.*
-copy_including_deps /$LMK/kernel/drivers/scsi/sg.*
-copy_including_deps /$LMK/kernel/drivers/ata
-copy_including_deps /$LMK/kernel/drivers/nvme
-copy_including_deps /$LMK/kernel/drivers/mmc
+#copy_including_deps /$LMK/kernel/drivers/cdrom
+#copy_including_deps /$LMK/kernel/drivers/scsi/sr_mod.*
+#copy_including_deps /$LMK/kernel/drivers/scsi/sd_mod.*
+#copy_including_deps /$LMK/kernel/drivers/scsi/scsi_mod.*
+#copy_including_deps /$LMK/kernel/drivers/scsi/sg.*
+#copy_including_deps /$LMK/kernel/drivers/ata
+#copy_including_deps /$LMK/kernel/drivers/nvme
+#copy_including_deps /$LMK/kernel/drivers/mmc
 
 # network support drivers
 if [ "$NETWORK" = "true" ]; then
@@ -122,9 +123,9 @@ if [ "$NETWORK" = "true" ]; then
 fi
 
 # copy all custom-built modules
-copy_including_deps /$LMK/updates
+#copy_including_deps /$LMK/updates
 
-copy_including_deps /$LMK/modules.*
+#copy_including_deps /$LMK/modules.*
 
 
 find $INITRAMFS -name "*.ko.gz" -exec gunzip {} \;
